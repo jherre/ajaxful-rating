@@ -11,12 +11,14 @@ module AjaxfulRating # :nodoc:
     end
     
     def show_value
+      rate = 0
       if options[:show_user_rating]
         rate = rateable.rate_by(user, options[:dimension]) if user
         rate ? rate.stars : 0
       else
-        rateable.rate_average(true, options[:dimension])
+        rate = rateable.rate_average(true, options[:dimension])
       end
+      (rate * rateable.class.max_stars) / rateable.class.max_value
     end
     
     def render
@@ -61,10 +63,10 @@ module AjaxfulRating # :nodoc:
       @css_builder.rule('.ajaxful-rating', :width => (rateable.class.max_stars * 25))
       @css_builder.rule('.ajaxful-rating.small',
         :width => (rateable.class.max_stars * 10)) if options[:small]
-      
+            
       stars << @template.content_tag(:li, i18n(:current), :class => "show-value",
         :style => "width: #{width}%")
-      stars += (1..rateable.class.max_stars).map do |i|
+      stars += (1..rateable.class.max_value).map do |i|
         star_tag(i)
       end
       @template.content_tag(:ul, stars.join.html_safe, :class => "ajaxful-rating#{' small' if options[:small]}")
@@ -74,13 +76,13 @@ module AjaxfulRating # :nodoc:
       already_rated = rateable.rated_by?(user, options[:dimension]) if user
       css_class = "stars-#{value}"
       @css_builder.rule(".ajaxful-rating .#{css_class}", {
-        :width => "#{(value / rateable.class.max_stars.to_f) * 100}%",
-        :zIndex => (rateable.class.max_stars + 2 - value).to_s
+        :width => "#{(100 * value * rateable.class.max_stars) / (rateable.class.max_value * rateable.class.max_stars)}%",
+        :zIndex => (rateable.class.max_value + 2 - value).to_s
       })
 
       @template.content_tag(:li) do
         if !options[:force_static] && (user && options[:current_user] == user && (!already_rated || rateable.axr_config[:allow_update]))
-          link_star_tag(value, css_class)
+          link_star_tag((value * rateable.class.max_stars) / rateable.class.max_value.to_f, css_class)
         else
           @template.content_tag(:span, show_value, :class => css_class, :title => i18n(:current))
         end
@@ -89,7 +91,7 @@ module AjaxfulRating # :nodoc:
 
     def link_star_tag(value, css_class)
       query = {
-        :stars => value,
+        :stars => value * rateable.class.max_value / rateable.class.max_stars,
         :dimension => options[:dimension],
         :small => options[:small],
         :show_user_rating => options[:show_user_rating]

@@ -23,7 +23,8 @@ module AjaxfulRating # :nodoc:
       end
       default = DEFAULTS[key]
       key = "ajaxful_rating.helper.#{key}"
-      I18n.t(key, :value => (value || show_value),
+      s_value = (value || show_value).to_s.gsub(/\.0+$/, '')
+      I18n.t(key, :value => s_value,
         :max => rateable.class.max_stars, :default => default)
     end
   end

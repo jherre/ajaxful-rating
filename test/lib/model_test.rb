@@ -17,8 +17,8 @@ class ModelTest < ActiveSupport::TestCase
     assert_equal Car.find_statement(:stars, 5, :reliability).size, 2
   end
 
-  def test_rate_higher_than_max_stars
-    assert_equal Car.max_stars, 10
+  def test_rate_higher_than_max_value
+    assert_equal Car.max_value, 10
     assert !@audi.rate(15, User.first)
   end
 

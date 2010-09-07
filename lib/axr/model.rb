@@ -32,6 +32,7 @@ module AjaxfulRating # :nodoc:
         def axr_config
           @axr_config ||= {
             :stars => 5,
+            :max_value => 5,
             :allow_update => true,
             :cache_column => :rating_average
           }
@@ -70,7 +71,7 @@ module AjaxfulRating # :nodoc:
     #     # some page update here ...
     #   end
     def rate(stars, user, dimension = nil)
-      return false if (stars.to_i > self.class.max_stars)
+      return false if (stars.to_i > self.class.max_value)
       raise Errors::AlreadyRatedError if (!self.class.axr_config[:allow_update] && rated_by?(user, dimension))
 
       rate = if self.class.axr_config[:allow_update] && rated_by?(user, dimension)
@@ -184,13 +185,22 @@ module AjaxfulRating # :nodoc:
 
   module SingletonMethods
     
-    # Maximum value accepted when rating the model. Default is 5.
+    # Maximum number of stars to display. Default is 5.
     #
     # Change it by passing the :stars option to +ajaxful_rateable+
     #
     #   ajaxful_rateable :stars => 10
     def max_stars
       axr_config[:stars]
+    end
+
+    # Maximum value accepted when rating the model. Default is 5.
+    #
+    # Change it by passing the :max option to +ajaxful_rateable+
+    #
+    #   ajaxful_rateable :max => 10
+    def max_value
+      axr_config[:max_value]
     end
 
     # Name of the class for the user model.
